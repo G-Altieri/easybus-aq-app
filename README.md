@@ -75,9 +75,11 @@ npm start
 
 ### Caratteristiche
 - **Direzione bidirezionale**: Casa → Università o Università → Casa
-- **Coordinate personalizzate**:
-  - Casa: `42.35706, 13.39041`
-  - Università: `42.36780, 13.35246`
+- **Selezione multipla casa**:
+  - **Casa 1**: `42.35706, 13.39041` (direzione Casa → Università)
+  - **Casa 2**: `42.35836, 13.38643` (direzione Casa → Università)
+  - **Casa Speciale**: `42.35916, 13.38143` (destinazione automatica Università → Casa)
+- **Università**: `42.36780, 13.35246`
 - **Modalità temporali**:
   - **Automatica**: Usa data e ora correnti
   - **Manuale**: Seleziona data e ora personalizzate
@@ -89,11 +91,16 @@ npm start
   - Linee bus con fermate
   - Numero di cambi necessari
 
+### Logica di selezione casa
+- **Casa → Università**: Puoi scegliere tra Casa 1 o Casa 2
+- **Università → Casa**: Utilizza automaticamente coordinate speciali (42.3592, 13.3814)
+
 ### Come usare
 1. Clicca su "Mezzi" nella sezione Azioni Rapide
 2. Seleziona la direzione del viaggio
-3. Scegli se usare orario corrente o personalizzato
-4. Premi "Cerca Mezzi" per ottenere tutti i percorsi
+3. Se vai da Casa → Università, scegli Casa 1 o Casa 2
+4. Scegli se usare orario corrente o personalizzato
+5. Premi "Cerca Mezzi" per ottenere tutti i percorsi
 
 ## 🎨 Personalizzazione ShadcnUI
 

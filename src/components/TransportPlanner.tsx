@@ -45,11 +45,15 @@ interface TransportResponse {
   };
 }
 
-const CASA_COORDS = "42.35706, 13.39041";
+// Coordinate delle posizioni
+const CASA1_COORDS = "42.35706, 13.39041";
+const CASA2_COORDS = "42.35836, 13.38643";
+const CASA_SPECIAL_COORDS = "42.35916, 13.38143"; // Casa quando si va da università a casa
 const UNI_COORDS = "42.36780, 13.35246";
 
 export default function TransportPlanner() {
   const [direction, setDirection] = useState<"casa-uni" | "uni-casa">("casa-uni");
+  const [selectedCasa, setSelectedCasa] = useState<"casa1" | "casa2">("casa1");
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<Itinerary[]>([]);
   const [error, setError] = useState<string>("");
@@ -65,6 +69,14 @@ export default function TransportPlanner() {
     const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const time = now.toTimeString().substring(0, 5); // HH:MM
     return { date, time };
+  };
+
+  // Funzione per ottenere le coordinate della casa
+  const getCasaCoordinates = () => {
+    if (direction === "uni-casa") {
+      return CASA_SPECIAL_COORDS; // Coordinate speciali quando si va dall'università a casa
+    }
+    return selectedCasa === "casa1" ? CASA1_COORDS : CASA2_COORDS;
   };
 
   const formatTime = (timestamp: number) => {
@@ -142,8 +154,9 @@ export default function TransportPlanner() {
         });
       }
 
-      const fromPlace = direction === "casa-uni" ? CASA_COORDS : UNI_COORDS;
-      const toPlace = direction === "casa-uni" ? UNI_COORDS : CASA_COORDS;
+      const casaCoords = getCasaCoordinates();
+      const fromPlace = direction === "casa-uni" ? casaCoords : UNI_COORDS;
+      const toPlace = direction === "casa-uni" ? UNI_COORDS : casaCoords;
 
       const params = new URLSearchParams({
         date,
@@ -236,6 +249,44 @@ export default function TransportPlanner() {
             </Select>
           </div>
 
+          {/* Selezione Casa (solo per direzione casa-uni) */}
+          {direction === "casa-uni" && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Quale casa:</label>
+              <Select value={selectedCasa} onValueChange={(value: "casa1" | "casa2") => setSelectedCasa(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="casa1">
+                    <div className="flex items-center space-x-2">
+                      <Home className="w-4 h-4" />
+                      <span>Casa 1</span>
+                      <span className="text-xs text-gray-500">(42.3571, 13.3904)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="casa2">
+                    <div className="flex items-center space-x-2">
+                      <Home className="w-4 h-4" />
+                      <span>Casa 2</span>
+                      <span className="text-xs text-gray-500">(42.3584, 13.3864)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Nota per direzione uni-casa */}
+          {direction === "uni-casa" && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+              <p className="text-sm text-amber-700 dark:text-amber-300 flex items-center">
+                <Home className="w-4 h-4 mr-2" />
+                Destinazione: Casa speciale (42.3592, 13.3814)
+              </p>
+            </div>
+          )}
+
           {/* Controlli Data e Ora */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
@@ -305,13 +356,19 @@ export default function TransportPlanner() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center space-x-2">
                   <Home className="w-4 h-4" />
-                  <span>Casa</span>
+                  <span>
+                    {direction === "uni-casa" ? "Casa (Speciale)" : 
+                     selectedCasa === "casa1" ? "Casa 1" : "Casa 2"}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <MapPin className="w-3 h-3" />
-                  <span>42.3571, 13.3904</span>
+                  <span>
+                    {direction === "uni-casa" ? "42.3592, 13.3814" :
+                     selectedCasa === "casa1" ? "42.3571, 13.3904" : "42.3584, 13.3864"}
+                  </span>
                 </div>
               </CardContent>
             </Card>
