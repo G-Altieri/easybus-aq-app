@@ -1,36 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EasyUni - Progressive Web App 📱
 
-## Getting Started
+Un'applicazione universitaria moderna costruita con Next.js, ShadcnUI e funzionalità PWA per un'esperienza mobile ottimale.
 
-First, run the development server:
+## 🚀 Caratteristiche
 
+### PWA (Progressive Web App)
+- **Installabile**: L'app può essere installata su smartphone Android e iOS
+- **Offline**: Funziona anche senza connessione internet (service worker)
+- **Mobile-first**: Ottimizzata per dispositivi mobili
+- **App nativa**: Esperienza simile a un'app nativa
+
+### ShadcnUI Components
+- ✅ Button, Card, Input, Label, Textarea
+- ✅ Select, Dropdown Menu, Dialog, Sheet
+- ✅ Navigation Menu, Avatar, Badge
+- ✅ Form, Table, Tabs, Alert
+- ✅ Toast notifications (Sonner)
+
+### Funzionalità App
+- 📊 Dashboard con panoramica universitaria
+- 📚 Gestione corsi e materiali
+- 📅 Calendario lezioni ed esami
+- 👤 Profilo studente con voti e CFU
+- 👥 Gruppi di studio
+- � **Mezzi pubblici** con pianificazione percorsi
+  - Selezione direzione Casa ↔ Università
+  - Orario automatico (corrente) o personalizzato
+  - Integrazione API L'Aquila trasporti
+  - Visualizzazione dettagliata di tutti i percorsi disponibili
+- �🔔 Notifiche push (in sviluppo)
+
+## 🛠️ Installazione e Avvio
+
+### Sviluppo
 ```bash
+# Installa dipendenze
+npm install
+
+# Avvia server di sviluppo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Apri http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Produzione
+```bash
+# Build per produzione
+npm run build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Avvia server produzione
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📱 Come installare l'app sul telefono
 
-## Learn More
+### Android (Chrome)
+1. Apri l'app in Chrome
+2. Tocca il menu (⋮) in alto a destra
+3. Seleziona "Aggiungi a schermata principale"
+4. Conferma l'installazione
 
-To learn more about Next.js, take a look at the following resources:
+### iOS (Safari)
+1. Apri l'app in Safari
+2. Tocca il pulsante di condivisione (⬆️)
+3. Scorri e tocca "Aggiungi a schermata principale"
+4. Personalizza il nome e tocca "Aggiungi"
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Desktop (Chrome/Edge)
+1. Apri l'app nel browser
+2. Clicca sull'icona di installazione nella barra degli indirizzi
+3. Conferma l'installazione
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🚌 Funzionalità Mezzi Pubblici
 
-## Deploy on Vercel
+### Caratteristiche
+- **Direzione bidirezionale**: Casa → Università o Università → Casa
+- **Coordinate personalizzate**:
+  - Casa: `42.35706, 13.39041`
+  - Università: `42.36780, 13.35246`
+- **Modalità temporali**:
+  - **Automatica**: Usa data e ora correnti
+  - **Manuale**: Seleziona data e ora personalizzate
+- **Integrazione API**: Trasporti L'Aquila (OpenDataLAquila)
+- **Risultati dettagliati**:
+  - Tutti i percorsi disponibili
+  - Orari di partenza/arrivo
+  - Durata totale e a piedi
+  - Linee bus con fermate
+  - Numero di cambi necessari
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Come usare
+1. Clicca su "Mezzi" nella sezione Azioni Rapide
+2. Seleziona la direzione del viaggio
+3. Scegli se usare orario corrente o personalizzato
+4. Premi "Cerca Mezzi" per ottenere tutti i percorsi
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Personalizzazione ShadcnUI
+
+### Aggiungere nuovi componenti
+```bash
+# Installa un nuovo componente
+npx shadcn@latest add [component-name]
+
+# Esempi:
+npx shadcn@latest add calendar
+npx shadcn@latest add datepicker
+npx shadcn@latest add chart
+```
+
+### Temi disponibili
+L'app utilizza il tema "Slate" di ShadcnUI. Per cambiare tema:
+```bash
+npx shadcn@latest init
+# Seleziona un nuovo tema durante la configurazione
+```
+
+## 📁 Struttura del Progetto
+
+```
+easyuni-app/
+├── src/
+│   ├── app/                 # App Router (Next.js 13+)
+│   │   ├── layout.tsx       # Layout principale
+│   │   ├── page.tsx         # Homepage
+│   │   └── globals.css      # Stili globali
+│   ├── components/
+│   │   └── ui/              # Componenti ShadcnUI
+│   └── lib/
+│       └── utils.ts         # Utility functions
+├── public/
+│   ├── manifest.json        # PWA Manifest
+│   ├── icon-192x192.png     # Icone PWA
+│   └── icon-512x512.png
+├── next.config.ts           # Configurazione Next.js + PWA
+└── package.json
+```
+
+## 🔧 Configurazione PWA
+
+### Manifest (public/manifest.json)
+- Nome app: "EasyUni"
+- Modalità: "standalone" (app nativa)
+- Orientamento: "portrait-primary"
+- Icone: 192x192 e 512x512 pixel
+
+### Service Worker
+- Generato automaticamente da next-pwa
+- Cache delle risorse statiche
+- Funzionamento offline
+
+## 🎯 Prossimi Sviluppi
+
+- [ ] Notifiche push
+- [ ] Sincronizzazione dati offline
+- [ ] Calendario interattivo
+- [ ] Chat gruppi studio
+- [ ] Integrazione con sistemi universitari
+- [ ] Dark mode migliorato
+- [ ] Geolocalizzazione aule
+
+## 💡 Note per lo Sviluppatore
+
+### PWA Testing
+- Usa Chrome DevTools > Application > Manifest
+- Testa l'installazione su dispositivo reale
+- Verifica il funzionamento offline
+
+### ShadcnUI
+- Tutti i componenti sono personalizzabili
+- Usa le CSS variables per i temi
+- Consulta la documentazione: https://ui.shadcn.com
+
+### Performance
+- L'app è ottimizzata per il mobile
+- Lazy loading dei componenti
+- Service worker per cache
+
+---
+
+**Sviluppato con ❤️ per studenti universitari**
