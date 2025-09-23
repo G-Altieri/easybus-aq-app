@@ -45,17 +45,6 @@ interface TransportResponse {
   };
 }
 
-// Coordinate delle posizioni
-const CASA1_COORDS = "42.35706, 13.39041";
-const CASA2_COORDS = "42.35836, 13.38643";
-const CASA_SPECIAL_COORDS = "42.35916, 13.38143"; // Casa quando si va da università a casa
-const UNI_COORDS = "42.36780, 13.35246";
-
-// Descrizioni via/fermata per le case
-const CASA1_LABEL = "Viale Croce Rossa bivio via San Sisto";
-const CASA2_LABEL = "Via Betao Cesidio";
-const CASA_SPECIAL_LABEL = "Viale Corrado IV";
-
 export default function TransportHome() {
   // Nuova logica: selezione libera di due fermate
   const [fromStopId, setFromStopId] = useState<string>("casa1");
@@ -107,7 +96,7 @@ export default function TransportHome() {
   // Funzione per ottenere le coordinate di una fermata
   const getStopCoords = (stopId: string) => {
     const stop = stops.find(s => s.id === stopId);
-    return stop ? stop.coords : CASA1_COORDS; // fallback
+    return stop ? stop.coords : DEFAULT_STOPS[0].coords; // fallback alla prima fermata predefinita
   };
 
   // Funzione per scambiare origine e destinazione
