@@ -14,23 +14,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EasyUni App",
-  description: "Your university companion app",
+  title: "EasyBusAq",
+  description: "Pianificatore autobus L'Aquila",
   manifest: "/manifest.json",
-  themeColor: "#000000",
+  themeColor: "#0b66c3",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "EasyUni",
+    title: "EasyBusAq",
   },
   icons: {
     icon: [
-      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/bus-logo.svg", sizes: "192x192", type: "image/svg+xml" },
+      { url: "/bus-logo.svg", sizes: "512x512", type: "image/svg+xml" },
     ],
     apple: [
-      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/bus-logo.svg", sizes: "192x192", type: "image/svg+xml" },
     ],
   },
 };
@@ -43,11 +43,12 @@ export default function RootLayout({
   return (
     <html lang="it">
       <head>
-        <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#0b66c3" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="EasyUni" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+  <meta name="apple-mobile-web-app-title" content="EasyBusAq" />
+  <link rel="icon" href="/bus-logo.ico" />
+  <link rel="apple-touch-icon" href="/bus-logo.svg" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

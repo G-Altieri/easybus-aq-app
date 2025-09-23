@@ -1,6 +1,6 @@
-# EasyUni - Progressive Web App 📱
+# EasyBusAq - Progressive Web App 📱
 
-Un'applicazione universitaria moderna costruita con Next.js, ShadcnUI e funzionalità PWA per un'esperienza mobile ottimale.
+EasyBusAq è un'applicazione per pianificare i percorsi in autobus a L'Aquila, costruita con Next.js, ShadcnUI e funzionalità PWA per un'esperienza mobile ottimale.
 
 ## 🚀 Caratteristiche
 
@@ -18,12 +18,11 @@ Un'applicazione universitaria moderna costruita con Next.js, ShadcnUI e funziona
 - ✅ Toast notifications (Sonner)
 
 ### Funzionalità App
-- 📊 Dashboard con panoramica universitaria
-- 📚 Gestione corsi e materiali
-- 📅 Calendario lezioni ed esami
-- 👤 Profilo studente con voti e CFU
-- 👥 Gruppi di studio
-- � **Mezzi pubblici** con pianificazione percorsi
+-- � Pianificatore mezzi pubblici per L'Aquila
+  - Selezione direzione Casa ↔ Università
+  - Orario automatico (corrente) o personalizzato
+  - Integrazione API L'Aquila trasporti
+  - Visualizzazione dettagliata di tutti i percorsi disponibili
   - Selezione direzione Casa ↔ Università
   - Orario automatico (corrente) o personalizzato
   - Integrazione API L'Aquila trasporti
@@ -71,7 +70,7 @@ npm start
 2. Clicca sull'icona di installazione nella barra degli indirizzi
 3. Conferma l'installazione
 
-## 🚌 Funzionalità Mezzi Pubblici
+## 🚌 Funzionalità Mezzi Pubblici (EasyBusAq)
 
 ### Caratteristiche
 - **Direzione bidirezionale**: Casa → Università o Università → Casa
@@ -125,7 +124,7 @@ npx shadcn@latest init
 ## 📁 Struttura del Progetto
 
 ```
-easyuni-app/
+easybusaq/
 ├── src/
 │   ├── app/                 # App Router (Next.js 13+)
 │   │   ├── layout.tsx       # Layout principale
@@ -146,7 +145,7 @@ easyuni-app/
 ## 🔧 Configurazione PWA
 
 ### Manifest (public/manifest.json)
-- Nome app: "EasyUni"
+ - Nome app: "EasyBusAq"
 - Modalità: "standalone" (app nativa)
 - Orientamento: "portrait-primary"
 - Icone: 192x192 e 512x512 pixel
