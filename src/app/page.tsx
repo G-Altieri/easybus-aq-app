@@ -23,6 +23,7 @@ export default function Home() {
       setIsInstallable(true);
     };
 
+    
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     return () => {
