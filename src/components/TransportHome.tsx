@@ -83,6 +83,7 @@ export default function TransportHome() {
     } catch (err) {
       console.error('Errore nel caricamento fermate:', err);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Inizializza data e ora correnti

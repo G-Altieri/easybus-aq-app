@@ -61,7 +61,7 @@ export default function SettingsDialog({ children, onStopsChange }: SettingsDial
   const [isOpen, setIsOpen] = useState(false);
   const [stops, setStops] = useState<Stop[]>(DEFAULT_STOPS);
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
-  const [newStop, setNewStop] = useState({ name: '', coords: '', description: '', type: 'casa' as const });
+  const [newStop, setNewStop] = useState<{name: string; coords: string; description: string; type: 'casa' | 'uni' | 'special'}>({ name: '', coords: '', description: '', type: 'casa' });
   const [showAddForm, setShowAddForm] = useState(false);
   const [error, setError] = useState('');
 
@@ -269,7 +269,7 @@ export default function SettingsDialog({ children, onStopsChange }: SettingsDial
                   <select
                     id="newType"
                     value={newStop.type}
-                    onChange={(e) => setNewStop(prev => ({ ...prev, type: e.target.value as any }))}
+                    onChange={(e) => setNewStop(prev => ({ ...prev, type: e.target.value as 'casa' | 'uni' | 'special' }))}
                     className="w-full p-2 border rounded-md"
                   >
                     <option value="casa">Casa</option>
