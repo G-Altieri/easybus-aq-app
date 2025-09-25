@@ -53,6 +53,10 @@ export default function TransportHome() {
   const [results, setResults] = useState<Itinerary[]>([]);
   const [error, setError] = useState<string>("");
   
+  // Stato per le tratte perse (negli ultimi 5 minuti)
+  const [missedResults, setMissedResults] = useState<Itinerary[]>([]);
+  const [isMissedLoading, setIsMissedLoading] = useState(false);
+  
   // Gestione fermate configurabili
   const [stops, setStops] = useState<Stop[]>(DEFAULT_STOPS);
   
@@ -162,83 +166,141 @@ export default function TransportHome() {
     }
   };
 
+  // Funzione helper per ottenere data e ora in formato API
+  const getApiDateTime = (offsetMinutes: number = 0) => {
+    let baseDate: Date;
+    
+    if (useCustomDateTime && customDate && customTime) {
+      // Usa data e ora personalizzate come base
+      const [year, month, day] = customDate.split('-');
+      const [hours, minutes] = customTime.split(':');
+      baseDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+    } else {
+      // Usa data e ora correnti
+      baseDate = new Date();
+    }
+    
+    // Applica l'offset in minuti
+    const targetDate = new Date(baseDate.getTime() + offsetMinutes * 60000);
+    
+    // Formato date per API
+    const date = targetDate.toLocaleDateString("en-US", { 
+      month: "numeric", 
+      day: "numeric", 
+      year: "numeric" 
+    }).replace(/\//g, "-");
+    
+    // Formato time per API (12h format)
+    const time = targetDate.toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit", 
+      hour12: true 
+    });
+    
+    return { date, time };
+  };
+
+  // Funzione helper per fare una chiamata API
+  const makeApiCall = async (offsetMinutes: number = 0): Promise<Itinerary[]> => {
+    const { date, time } = getApiDateTime(offsetMinutes);
+    const fromPlace = getStopCoords(fromStopId);
+    const toPlace = getStopCoords(toStopId);
+
+    const params = new URLSearchParams({
+      date,
+      mode: "TRANSIT,WALK",
+      arriveBy: "false",
+      wheelchair: "false",
+      fromPlace,
+      toPlace,
+      time,
+      maxWalkDistance: "750",
+      locale: "it"
+    });
+
+    const response = await fetch(
+      `https://trasporti.opendatalaquila.it/infomobility/otp/routers/default/plan?${params}`,
+      {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: TransportResponse = await response.json();
+    return data.plan?.itineraries || [];
+  };
+
   const searchTransport = async () => {
     setIsLoading(true);
+    setIsMissedLoading(true);
     setError("");
     setResults([]);
+    setMissedResults([]);
 
     try {
-      let date: string;
-      let time: string;
+      // Chiama API per l'orario richiesto (normale)
+      const normalResults = await makeApiCall(0);
+      setResults(normalResults);
 
-      if (useCustomDateTime && customDate && customTime) {
-        // Usa data e ora personalizzate
-        const [year, month, day] = customDate.split('-');
-        date = `${month}-${day}-${year}`;
+      // Chiama API per 5 minuti prima per trovare i bus persi
+      const missedResults = await makeApiCall(-10);
+      
+      // Filtra le tratte perse: solo quelle che partivano nei 5 minuti precedenti
+      const { time: requestedTime } = getApiDateTime(0);
+      const requestedTimeMs = getTimeInMinutes(requestedTime);
+      const fiveMinutesBeforeMs = requestedTimeMs - 5; // 5 minuti prima
+      
+      // Crea set delle tratte normali per evitare duplicati
+      const normalRoutes = new Set(
+        normalResults.flatMap(itinerary => 
+          itinerary.legs
+            .filter(leg => leg.mode !== 'WALK' && leg.route)
+            .map(leg => `${leg.route}-${leg.from.departure}`)
+        )
+      );
+      
+      const filteredMissedResults = missedResults.filter(itinerary => {
+        // Controlla se c'è almeno una leg di trasporto (non solo walk)
+        const hasTransit = itinerary.legs.some(leg => leg.mode !== 'WALK');
+        if (!hasTransit) return false;
         
-        // Converti da 24h a 12h format
-        const [hours, minutes] = customTime.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'pm' : 'am';
-        const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-        time = `${hour12}:${minutes}${ampm}`;
-      } else {
-        // Usa data e ora correnti
-        const now = new Date();
-        date = now.toLocaleDateString("en-US", { 
-          month: "numeric", 
-          day: "numeric", 
-          year: "numeric" 
-        }).replace(/\//g, "-");
-        time = now.toLocaleTimeString("en-US", { 
+        // Prendi il tempo di partenza del primo trasporto pubblico
+        const firstTransitLeg = itinerary.legs.find(leg => leg.mode !== 'WALK');
+        if (!firstTransitLeg?.from?.departure) return false;
+        
+        const departureTimeMs = firstTransitLeg.from.departure;
+        const departureTime = new Date(departureTimeMs).toLocaleTimeString("en-US", { 
           hour: "numeric", 
           minute: "2-digit", 
           hour12: true 
         });
-      }
-
-      const fromPlace = getStopCoords(fromStopId);
-      const toPlace = getStopCoords(toStopId);
-
-      const params = new URLSearchParams({
-        date,
-        mode: "TRANSIT,WALK",
-        arriveBy: "false",
-        wheelchair: "false",
-        fromPlace,
-        toPlace,
-        time,
-        maxWalkDistance: "750",
-        locale: "it"
-      });
-
-      const response = await fetch(
-        `https://trasporti.opendatalaquila.it/infomobility/otp/routers/default/plan?${params}`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: TransportResponse = await response.json();
-      
-      if (data.plan && data.plan.itineraries) {
-        setResults(data.plan.itineraries);
+        const departureMinutes = getTimeInMinutes(departureTime);
         
-        // Scroll automatico ai risultati dopo un breve delay
-        setTimeout(() => {
-          resultsRef.current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }, 300);
-      } else {
+        // Escludi se già presente nei risultati normali
+        const routeKey = `${firstTransitLeg.route}-${firstTransitLeg.from.departure}`;
+        if (normalRoutes.has(routeKey)) return false;
+        
+        // Includi solo se la partenza è nei 5 minuti precedenti all'orario richiesto
+        return departureMinutes >= fiveMinutesBeforeMs && departureMinutes < requestedTimeMs;
+      });
+      
+      setMissedResults(filteredMissedResults);
+        
+      // Scroll automatico ai risultati dopo un breve delay
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 300);
+      
+      if (normalResults.length === 0 && filteredMissedResults.length === 0) {
         setError("Nessun percorso trovato per l'orario richiesto");
       }
     } catch (err) {
@@ -246,7 +308,23 @@ export default function TransportHome() {
       setError("Errore nel recupero dei dati. Riprova più tardi.");
     } finally {
       setIsLoading(false);
+      setIsMissedLoading(false);
     }
+  };
+
+  // Funzione helper per convertire tempo in minuti per confronto
+  const getTimeInMinutes = (timeString: string): number => {
+    const [time, ampm] = timeString.split(/(?=[ap]m)/i);
+    const [hours, minutes] = time.split(':').map(Number);
+    let totalHours = hours;
+    
+    if (ampm.toLowerCase() === 'pm' && hours !== 12) {
+      totalHours += 12;
+    } else if (ampm.toLowerCase() === 'am' && hours === 12) {
+      totalHours = 0;
+    }
+    
+    return totalHours * 60 + minutes;
   };
 
   return (
@@ -498,6 +576,94 @@ export default function TransportHome() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Tratte perse (negli ultimi 5 minuti) */}
+      {missedResults.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 flex items-center space-x-2">
+            <Clock className="w-5 h-5" />
+            <span>⏰ Autobus appena persi (ultimi 5 minuti)</span>
+          </h3>
+          <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+            Questi autobus sarebbero dovuti passare prima dell&apos;orario da te richiesto ma sono già partiti.
+          </p>
+          {missedResults.map((itinerary, index) => (
+            <Card key={`missed-${index}`} className="border-l-4 border-l-red-500 bg-red-50 dark:bg-red-900/20 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <CardTitle className="text-base flex items-center space-x-2 text-red-700 dark:text-red-400">
+                      <Clock className="w-4 h-4" />
+                      <span>
+                        {formatTime(itinerary.startTime)} → {formatTime(itinerary.endTime)}
+                      </span>
+                      <Badge variant="destructive" className="ml-2 text-xs">PERSO</Badge>
+                    </CardTitle>
+                    <CardDescription className="text-red-600 dark:text-red-400">
+                      Durata totale: {formatDuration(itinerary.duration)}
+                    </CardDescription>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Badge variant="outline" className="border-red-300 text-red-700">
+                      {formatDuration(itinerary.walkTime)} camminata
+                    </Badge>
+                    <Badge variant="outline" className="border-red-300 text-red-700">
+                      {itinerary.transfers} trasferimenti
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {itinerary.legs.map((leg, legIndex) => (
+                    <div key={legIndex} className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getModeColor(leg.mode)}`}>
+                        {leg.mode === 'WALK' ? (
+                          <MapPin className="w-4 h-4" />
+                        ) : (
+                          <Bus className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium text-red-700 dark:text-red-400">
+                              {leg.mode === 'WALK' ? 'A piedi' : `Linea ${leg.route || leg.routeShortName || 'N/A'}`}
+                              {leg.headsign && leg.mode !== 'WALK' && (
+                                <span className="text-sm text-red-600 dark:text-red-400 ml-2">→ {leg.headsign}</span>
+                              )}
+                            </div>
+                            <div className="text-sm text-red-600 dark:text-red-400">
+                              {leg.from.name} → {leg.to.name}
+                              {leg.from.departure && leg.to.arrival && (
+                                <span className="ml-2">
+                                  ({formatTime(leg.from.departure)} - {formatTime(leg.to.arrival)})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right text-sm text-red-600 dark:text-red-400">
+                            <div>{Math.round((leg.distance || 0))} m</div>
+                            <div>{formatDuration(leg.duration)}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Indicatore di caricamento per tratte perse */}
+      {isMissedLoading && (
+        <div className="flex items-center justify-center p-4">
+          <Loader2 className="w-6 h-6 animate-spin mr-2 text-red-500" />
+          <span className="text-red-600">Controllo autobus persi...</span>
         </div>
       )}
     </div>
