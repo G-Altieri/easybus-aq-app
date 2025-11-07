@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Settings, Plus, Edit, Trash2, Home, School, MapPin, Save, X } from "lucide-react";
+import dynamic from 'next/dynamic';
+const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false });
 
 export interface Stop {
   id: string;
@@ -249,10 +251,18 @@ export default function SettingsDialog({ children, onStopsChange }: SettingsDial
                     <Label htmlFor="newCoords">Coordinate *</Label>
                     <Input
                       id="newCoords"
+                      className="w-full"
                       value={newStop.coords}
                       onChange={(e) => setNewStop(prev => ({ ...prev, coords: e.target.value }))}
                       placeholder="42.123456, 13.654321"
                     />
+                    <div className="mt-2">
+                      <MapPicker
+                        initialCoords={newStop.coords}
+                        onSelect={(coords) => setNewStop(prev => ({ ...prev, coords }))}
+                        trigger={<Button variant="outline" size="sm"><MapPin className="w-4 h-4 mr-2" />Seleziona su mappa</Button>}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -315,9 +325,17 @@ export default function SettingsDialog({ children, onStopsChange }: SettingsDial
                           <div>
                             <Label>Coordinate *</Label>
                             <Input
+                              className="w-full"
                               value={editingStop.coords}
                               onChange={(e) => setEditingStop(prev => prev ? { ...prev, coords: e.target.value } : null)}
                             />
+                            <div className="mt-2">
+                              <MapPicker
+                                initialCoords={editingStop.coords}
+                                onSelect={(coords) => setEditingStop(prev => prev ? { ...prev, coords } : null)}
+                                trigger={<Button size="sm" variant="outline"><MapPin className="w-4 h-4 mr-2" />Seleziona su mappa</Button>}
+                              />
+                            </div>
                           </div>
                         </div>
                         <div>
